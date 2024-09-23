@@ -2,6 +2,7 @@ import { ZodError } from 'zod';
 
 import { createUserSchema } from '../../schemas/index.js';
 import { badRequest, created, serverError } from '../helpers/index.js';
+import { EmailIsAlreadyInUseError } from '../../errors/user.js';
 
 export class CreateUserController {
     constructor(createUserUseCase) {
@@ -26,6 +27,9 @@ export class CreateUserController {
         } catch (error) {
             // tratar possíveis erros
             console.error(error);
+            if (error instanceof EmailIsAlreadyInUseError) {
+                return badRequest({ message: error.message });
+            }
             if (error instanceof ZodError) {
                 return badRequest({ message: error.errors[0].message });
             }

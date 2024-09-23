@@ -1,12 +1,20 @@
 import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
+import { EmailIsAlreadyInUseError } from '../../errors/index.js';
 
 export class CreateUserUseCase {
-    constructor(createUserRepository) {
+    constructor(createUserRepository, getUserByEmailRepository) {
         this.createUserRepository = createUserRepository;
+        this.getUserByEmailRepository = getUserByEmailRepository;
     }
     async execute(createUserParams) {
         // se o e-mail já está em uso
+        const userWithProvidedEmail =
+            await this.getUserByEmailRepository.execute(createUserParams.email);
+
+        if (userWithProvidedEmail) {
+            throw new EmailIsAlreadyInUseError(createUserParams.email);
+        }
 
         // criptografar senha
         const hashedPassword = await bcrypt.hash(createUserParams.password, 10);

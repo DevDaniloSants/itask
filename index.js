@@ -1,7 +1,10 @@
 import express from 'express';
 import 'dotenv/config';
 import { CreateUserController } from './src/controllers/index.js';
-import { PostgresCreateUserRepository } from './src/repositories/index.js';
+import {
+    GetUserByEmailRepository,
+    PostgresCreateUserRepository,
+} from './src/repositories/index.js';
 import { CreateUserUseCase } from './src/use-cases/index.js';
 
 const app = express();
@@ -15,7 +18,11 @@ app.get('/', (req, res) => {
 
 app.post('/', async (request, response) => {
     const createUserRepository = new PostgresCreateUserRepository();
-    const createUserUseCase = new CreateUserUseCase(createUserRepository);
+    const getUserByEmailRepository = new GetUserByEmailRepository();
+    const createUserUseCase = new CreateUserUseCase(
+        createUserRepository,
+        getUserByEmailRepository,
+    );
     const createUserController = new CreateUserController(createUserUseCase);
 
     const { statusCode, body } = await createUserController.execute(request);
